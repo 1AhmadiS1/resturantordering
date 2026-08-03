@@ -21,6 +21,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from restaurant.urls import router as restaurant_router
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -34,4 +36,5 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="login"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     path("api/", include("user.urls")),
+    path("api/", include("restaurant.urls")),
 ]
