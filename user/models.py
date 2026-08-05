@@ -37,6 +37,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     role=models.CharField(choices=RoleChoices.choices,max_length=20,default=RoleChoices.WAITER)
+    restaurant = models.ForeignKey(
+    "restaurant.Restaurant",
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="employees"
+)
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

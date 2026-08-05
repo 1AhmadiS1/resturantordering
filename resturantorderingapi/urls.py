@@ -21,7 +21,20 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from restaurant.urls import router as restaurant_router
+from drf_spectacular.utils import extend_schema, extend_schema_view
+@extend_schema_view(
+    post=extend_schema(tags=["Authentication"])
+)
+class LoginView(TokenObtainPairView):
+    pass
+
+
+@extend_schema_view(
+    post=extend_schema(tags=["Authentication"])
+)
+class RefreshTokenView(TokenRefreshView):
+    pass
+
 
 
 urlpatterns = [
@@ -33,8 +46,9 @@ urlpatterns = [
             url_name="schema"
         ),
     ),
-    path("api/token/", TokenObtainPairView.as_view(), name="login"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
+    path("api/token/",LoginView.as_view(), name="login"),
+    path("api/token/refresh/", RefreshTokenView.as_view(), name="refresh"),
     path("api/", include("user.urls")),
     path("api/", include("restaurant.urls")),
+    path("api/", include("menu.urls"))
 ]

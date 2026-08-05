@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "user.apps.UserConfig",
     "restaurant.apps.RestaurantConfig",
+    "menu.apps.MenuConfig",
 ]
 
 MIDDLEWARE = [

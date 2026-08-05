@@ -24,8 +24,10 @@ class RestaurantView(viewsets.ModelViewSet):
         user=self.request.user
         if user.role==User.RoleChoices.PLATFORM_ADMIN:
             return Restaurant.objects.all()
-        elif user.role in [User.RoleChoices.OWNER,User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
+        elif user.role == User.RoleChoices.OWNER:
             return Restaurant.objects.filter(owner=user)  
+        elif user.role in [User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
+            return Restaurant.objects.filter(employees=user)
         else:
             return Restaurant.objects.none()          
         

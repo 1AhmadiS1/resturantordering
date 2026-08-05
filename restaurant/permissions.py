@@ -14,6 +14,8 @@ class RestaurantPermission(permissions.BasePermission):
         if user.role == User.RoleChoices.OWNER:
             return request.method in [*SAFE_METHODS, "PUT", "PATCH", "DELETE"]
 
+        elif user.role in[User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
+            return request.method in SAFE_METHODS
         return False
 
     def has_object_permission(self, request, view, obj):
@@ -22,7 +24,10 @@ class RestaurantPermission(permissions.BasePermission):
         if user.role == User.RoleChoices.PLATFORM_ADMIN:
             return True
 
-        if user.role == User.RoleChoices.OWNER:
+        elif user.role == User.RoleChoices.OWNER:
             return obj.owner_id == user.id
-
+        
+        elif user.role in [User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
+            return user.restaurant_id == obj.id
+            
         return False
