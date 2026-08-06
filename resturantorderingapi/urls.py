@@ -50,5 +50,8 @@ urlpatterns = [
     path("api/token/refresh/", RefreshTokenView.as_view(), name="refresh"),
     path("api/", include("user.urls")),
     path("api/", include("restaurant.urls")),
-    path("api/", include("menu.urls"))
+    path("api/", include("menu.urls")),
+    path("api/", include("menuItem.urls")),
+    path("api/", include("table.urls")),
+    path("api/", include("order.urls")),
 ]

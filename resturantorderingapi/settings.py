@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     "user.apps.UserConfig",
     "restaurant.apps.RestaurantConfig",
     "menu.apps.MenuConfig",
+    "menuItem.apps.MenuitemConfig",
+    "table.apps.TableConfig",
+    'order.apps.OrderConfig',
 ]
 
 MIDDLEWARE = [
