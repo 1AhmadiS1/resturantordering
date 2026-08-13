@@ -1,4 +1,5 @@
 from rest_framework import serializers
+# pyrefly: ignore [missing-import]
 from .models import MenuItem
 from user.models import User
 

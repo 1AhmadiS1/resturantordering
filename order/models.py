@@ -40,3 +40,4 @@ class OrderItem(models.Model):
         return f"Order {self.id} - {self.menu_item.name}"
 
     
+    

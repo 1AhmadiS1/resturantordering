@@ -1,3 +1,8 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from user.permissions import ChangePasswordPermission
+from user.serializer import ChangePasswordSerializer
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import viewsets
@@ -26,10 +31,29 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.all()
 
         if user.role == User.RoleChoices.OWNER:
-            return User.objects.filter(role__in=[
-                User.RoleChoices.OWNER,
-                User.RoleChoices.WAITER,
-                User.RoleChoices.CHEF,
-            ])
-
+            return User.objects.filter(restaurant__owner=user).exclude(role=User.RoleChoices.OWNER).exclude(role=User.RoleChoices.PLATFORM_ADMIN)
         return User.objects.none()
+
+@extend_schema(
+  tags=["Users"]
+
+)
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated,ChangePasswordPermission]
+    def put(self,request):
+        serializer=ChangePasswordSerializer(
+            instance=request.user,
+            data=request.data,
+            context={"request":request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail":"Password changed successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+        
+            
+        

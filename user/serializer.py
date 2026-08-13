@@ -28,13 +28,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        if password:
-            instance.set_password(password)
-
+        if password is not None:
+            raise serializers.ValidationError({"password": "Password cant be updated here"})
+        for attr,value in validated_data.items():
+            setattr(instance,attr,value)    
         instance.save()
         return instance
 
@@ -51,7 +48,26 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
             "restaurant": "Owner and platform admin should not be assigned to a restaurant."
         })
-
+        
         return value    
 
-         
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    class Meta:
+        model = User
+        fields = ["old_password", "new_password"]
+
+    def validate(self,value):
+        request=self.context.get("request")
+        if request is None or not request.user.is_authenticated:
+            raise serializers.ValidationError("You are not authorized to change password")
+        user=request.user
+        if user.check_password(value["old_password"]) is False:
+            raise serializers.ValidationError("Old password is incorrect")
+        return value 
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data["new_password"])
+        instance.save()
+        return instance   

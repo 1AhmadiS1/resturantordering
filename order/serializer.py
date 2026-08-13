@@ -52,15 +52,18 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    items=OrderItemCreateSerializer(many=True)
+
+    items=OrderItemCreateSerializer(many=True,source="order_items")
+
     class Meta:
         model=Order
         fields=["id","table","restuarant","waiter","total_price","status","note","created_at","updated_at","items"]
         read_only_fields=["total_price","restuarant","created_at","updated_at","waiter","id"]
     def validate(self,attrs):
+        menu_items=attrs.get("menu_items")
         user=self.context["request"].user
         table=attrs.get("table")
-
+    
         if user.role == User.RoleChoices.WAITER:
             if table.restaurant != user.restaurant:
                 raise serializers.ValidationError(
@@ -76,9 +79,17 @@ class OrderSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError("Invalid user role.")
         return attrs
-
+    def validate_items(self,value):
+        user=self.context["request"].user
+        for item in value:
+            if item.menu_item.menu.restuarant.owner != user:
+                raise serializers.ValidationError(
+                    "You can only add items to orders from your own restuarant."
+                )
+        return value
+        
     def create(self,validated_data):
-        items=validated_data.pop("items")
+        items=validated_data.pop("order_items")
         table = validated_data["table"]
         order=Order.objects.create(restuarant=table.restaurant, waiter=self.context["request"].user, **validated_data)
         for item in items:
@@ -92,4 +103,8 @@ class OrderSerializer(serializers.ModelSerializer):
             OrderItem.objects.create(order=order, menu_item=menu_item, quantity=quantity, price=price)
             order.total_price += price * quantity
         order.save()
-        return order        
+        return order
+            
+# if we update items the status will be pending again
+
+
