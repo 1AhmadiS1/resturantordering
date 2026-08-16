@@ -7,6 +7,8 @@ from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 from user.models import User
 from user.permissions import RolePermission
@@ -23,15 +25,20 @@ from user.serializer import UserSerializer
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, RolePermission]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["role", "restaurant"]
+    search_fields = ["email", "first_name", "last_name"]
+    ordering_fields = ["id", "email", "role"]
+    ordering = ["role"]
 
     def get_queryset(self):
         user = self.request.user
 
         if user.role == User.RoleChoices.PLATFORM_ADMIN:
-            return User.objects.all()
+            return User.objects.all().order_by("role")
 
         if user.role == User.RoleChoices.OWNER:
-            return User.objects.filter(restaurant__owner=user).exclude(role=User.RoleChoices.OWNER).exclude(role=User.RoleChoices.PLATFORM_ADMIN)
+            return User.objects.filter(restaurant__owner=user).exclude(role=User.RoleChoices.OWNER).exclude(role=User.RoleChoices.PLATFORM_ADMIN).order_by("role")
         return User.objects.none()
 
 @extend_schema(

@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
