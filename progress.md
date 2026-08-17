@@ -1,165 +1,61 @@
 # Restaurant Ordering API Progress
 
-## Project Direction
+## Current Stage
 
-This is a SaaS-style internal restaurant ordering backend.
+The core backend MVP and Docker development environment are complete. The project is now moving into production hardening and deployment work.
 
-The system is for restaurant staff:
+## Completed
 
-- Platform admin manages the SaaS platform.
-- Owner manages restaurant users/staff.
-- Waiter creates table orders.
-- Chef receives and updates kitchen orders.
+- Custom email-based user model and roles: platform admin, owner, waiter, and chef.
+- JWT login and refresh endpoints.
+- Self-service password change with old-password verification and Django password validation.
+- Restaurant, menu, menu item, table, order, and order-item models and APIs.
+- Restaurant-scoped querysets, serializer validation, and object permissions.
+- Nested order-item creation and updates with automatic price calculation.
+- Order workflow rules for pending, preparing, ready, served, and cancelled states.
+- Filtering, searching, ordering, and limit/offset pagination.
+- Swagger/OpenAPI descriptions and schema validation.
+- Docker development services for Django and MySQL.
+- MySQL health check, automatic migrations, and persistent database volume.
+- Environment-based Django and database configuration.
+- Non-root Django container, localhost-only development ports, and Docker build exclusions for secrets.
+- Automated model, serializer, permission, and end-to-end API tests.
 
-No public customer ordering flow is planned right now.
+## Verification
 
-## Setup Completed
+- 30 automated tests passing.
+- Django system and deployment checks passing with production security flags.
+- Swagger schema validation passing.
+- Docker Compose configuration and MySQL health check passing.
+- Real `.env` ignored by Git and excluded from Docker images.
 
-- Django project created.
-- `user` app created.
-- MySQL database configured through `.env`.
-- Database password removed from `settings.py`.
-- Django REST Framework configured.
-- Simple JWT configured.
-- Swagger/OpenAPI configured with `drf-spectacular`.
-- Custom user model configured with `AUTH_USER_MODEL = "user.User"`.
-- User migrations exist.
+## Main Development Commands
 
-## User Model
+Start the project:
 
-Custom user model is based on:
-
-- `AbstractBaseUser`
-- `PermissionsMixin`
-- custom `UserManager`
-
-Login field:
-
-- `email`
-
-Current user fields:
-
-- `email`
-- `first_name`
-- `last_name`
-- `is_active`
-- `is_staff`
-- `role`
-
-Current roles:
-
-- `platform_admin`
-- `owner`
-- `waiter`
-- `chef`
-
-## User Admin
-
-Custom Django admin is configured for the custom user.
-
-Admin supports:
-
-- listing users
-- searching by email/name/role
-- ordering by email
-- creating users with `password1` and `password2`
-- editing role and permission fields
-
-## User API
-
-User serializer is configured.
-
-It supports:
-
-- creating users
-- updating users
-- hashing passwords correctly
-- hiding password from responses
-- requiring password on create
-- allowing password to be optional on update
-- preventing non-platform-admin users from assigning `platform_admin`
-
-User API uses one DRF `ModelViewSet`:
-
-- `UserViewSet`
-
-Routes are wired through a DRF router.
-
-Current user endpoints:
-
-```text
-GET     /api/users/
-POST    /api/users/
-GET     /api/users/<id>/
-PUT     /api/users/<id>/
-PATCH   /api/users/<id>/
-DELETE  /api/users/<id>/
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
-Permission behavior:
+Run all tests:
 
-- Platform admin can access all users.
-- Owner can access users with roles `owner`, `waiter`, and `chef`.
-- Waiter and chef currently get no user queryset access.
-
-## Auth And Docs Endpoints
-
-JWT endpoints:
-
-```text
-POST /api/token/
-POST /api/token/refresh/
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T web python manage.py test
 ```
 
-Swagger/OpenAPI endpoints:
+Stop the project without deleting database data:
 
-```text
-GET /api/schema/
-GET /api/docs/
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 ```
 
-## Important Notes
+Swagger is available at `http://127.0.0.1:8000/api/docs/`.
 
-- Run Django commands with `py`, not `python`.
-- If port `8000` or `8001` is blocked, use a higher port like:
+## Remaining Work
 
-```bash
-py manage.py runserver 127.0.0.1:8080
-```
-
-- The project folder name is currently spelled `resturantorderingapi`.
-- The app file is named `serializer.py`, not the more common `serializers.py`.
-
-## Next Steps
-
-1. Run:
-
-```bash
-py manage.py check
-```
-
-2. Confirm migrations are applied:
-
-```bash
-py manage.py migrate
-```
-
-3. Create a superuser/platform admin:
-
-```bash
-py manage.py createsuperuser
-```
-
-4. Test JWT login:
-
-```text
-POST /api/token/
-```
-
-5. Test user CRUD in Swagger:
-
-```text
-/api/docs/
-```
-
-6. After user app is verified, start the restaurant/tenant app.
+1. Add API throttling, with stricter limits for authentication endpoints.
+2. Add production settings and `docker-compose.prod.yml`.
+3. Replace Django's development server with Gunicorn.
+4. Add Nginx and HTTPS configuration.
+5. Add production logging, monitoring, and deployment automation.
+6. Add caching only after measuring endpoints that benefit from it.

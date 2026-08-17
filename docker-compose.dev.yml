@@ -1,20 +1,25 @@
 services:
   web:
-    command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      DB_NAME: restaurant_ordering
-      DB_USER: root
-      DB_PASSWORD: 123456
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in .env}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set in .env}
+      DB_USER: ${DB_USER:?DB_USER must be set in .env}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       DB_HOST: db
       DB_PORT: 3306
 
   db:
     environment:
-      MYSQL_DATABASE: restaurant_ordering
-      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: ${DB_NAME:?DB_NAME must be set in .env}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set in .env}
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"

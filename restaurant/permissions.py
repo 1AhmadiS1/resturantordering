@@ -5,6 +5,8 @@ from user.models import User
 
 
 class RestaurantPermission(permissions.BasePermission):
+    message = "Your role is not allowed to perform this action on restaurants."
+
     def has_permission(self, request, view):
         user = request.user
 
@@ -14,7 +16,7 @@ class RestaurantPermission(permissions.BasePermission):
         if user.role == User.RoleChoices.OWNER:
             return request.method in [*SAFE_METHODS, "PUT", "PATCH", "DELETE"]
 
-        elif user.role in[User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
+        if user.role in [User.RoleChoices.CHEF, User.RoleChoices.WAITER]:
             return request.method in SAFE_METHODS
         return False
 
@@ -24,10 +26,10 @@ class RestaurantPermission(permissions.BasePermission):
         if user.role == User.RoleChoices.PLATFORM_ADMIN:
             return True
 
-        elif user.role == User.RoleChoices.OWNER:
+        if user.role == User.RoleChoices.OWNER:
             return obj.owner_id == user.id
         
-        elif user.role in [User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
-            return user.restaurant_id == obj.id
+        if user.role in [User.RoleChoices.CHEF, User.RoleChoices.WAITER]:
+            return request.method in SAFE_METHODS and user.restaurant_id == obj.id
             
         return False

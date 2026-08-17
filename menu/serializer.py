@@ -4,10 +4,20 @@ from user.models import User
 
 
 class MenuSerializer(serializers.ModelSerializer):
+    restaurant_name = serializers.CharField(source="restuarant.name", read_only=True)
+
     class Meta:
         model = Menu
-        fields = ["id", "name", "description", "restuarant", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "restuarant",
+            "restaurant_name",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "restaurant_name", "created_at", "updated_at"]
 
     def validate_restuarant(self, value):
         request = self.context.get("request")
@@ -22,4 +32,3 @@ class MenuSerializer(serializers.ModelSerializer):
             return value
 
         raise serializers.ValidationError("You are not allowed to create menus.")
-        

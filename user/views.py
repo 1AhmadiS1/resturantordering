@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from user.permissions import ChangePasswordPermission
-from user.serializer import ChangePasswordSerializer
+from user.serializer import ChangePasswordResponseSerializer, ChangePasswordSerializer
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import viewsets
@@ -12,17 +12,52 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from user.models import User
 from user.permissions import RolePermission
-from user.serializer import UserSerializer
+from user.serializer import UserCreateSerializer, UserSerializer
 
 @extend_schema_view(
-    list=extend_schema(tags=['Users']),
-    retrieve=extend_schema(tags=['Users'])
-    ,create=extend_schema(tags=['Users'])
-    ,update=extend_schema(tags=['Users'])
-    ,partial_update=extend_schema(tags=['Users'])
-    ,destroy=extend_schema(tags=['Users'])
+    list=extend_schema(
+        tags=["Users"],
+        summary="List manageable users",
+        description=(
+            "Platform admins see all users. Owners see only waiters and chefs assigned "
+            "to their restaurants."
+        ),
+    ),
+    retrieve=extend_schema(
+        tags=["Users"],
+        summary="Get a user",
+        description="Return one user that the authenticated admin or owner is allowed to manage.",
+    ),
+    create=extend_schema(
+        tags=["Users"],
+        summary="Create a user",
+        description=(
+            "Platform admins may create any role. Owners may create only waiter or chef "
+            "accounts assigned to one of their own restaurants."
+        ),
+        responses={201: UserSerializer},
+    ),
+    update=extend_schema(
+        tags=["Users"],
+        summary="Replace a user",
+        description="Passwords cannot be changed here; use the change-password endpoint.",
+    ),
+    partial_update=extend_schema(
+        tags=["Users"],
+        summary="Update a user",
+        description=(
+            "Update allowed profile, role, or restaurant fields. Owner scope is enforced "
+            "again after the update values are combined with the existing user."
+        ),
+    ),
+    destroy=extend_schema(
+        tags=["Users"],
+        summary="Delete a user",
+        description="Owners may delete only their own waiter or chef accounts; platform admins may delete any user.",
+    ),
 )
 class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, RolePermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -31,22 +66,37 @@ class UserViewSet(viewsets.ModelViewSet):
     ordering_fields = ["id", "email", "role"]
     ordering = ["role"]
 
+    def get_serializer_class(self):
+        if self.action == "create":
+            return UserCreateSerializer
+        return UserSerializer
+
     def get_queryset(self):
         user = self.request.user
 
         if user.role == User.RoleChoices.PLATFORM_ADMIN:
-            return User.objects.all().order_by("role")
+            return User.objects.select_related("restaurant").all().order_by("role")
 
         if user.role == User.RoleChoices.OWNER:
-            return User.objects.filter(restaurant__owner=user).exclude(role=User.RoleChoices.OWNER).exclude(role=User.RoleChoices.PLATFORM_ADMIN).order_by("role")
+            return User.objects.select_related("restaurant").filter(
+                restaurant__owner=user,
+                role__in=[User.RoleChoices.WAITER, User.RoleChoices.CHEF],
+            ).order_by("role")
         return User.objects.none()
 
 @extend_schema(
-  tags=["Users"]
-
+    tags=["Authentication"],
+    summary="Change your password",
+    description=(
+        "Change the authenticated user's password after verifying the old password. "
+        "All roles may change their own password."
+    ),
+    request=ChangePasswordSerializer,
+    responses={200: ChangePasswordResponseSerializer},
 )
 
 class ChangePasswordView(APIView):
+    serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated,ChangePasswordPermission]
     def put(self,request):
         serializer=ChangePasswordSerializer(

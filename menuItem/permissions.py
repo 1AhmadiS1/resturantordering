@@ -1,11 +1,10 @@
-from menu.models import Menu
-from django.contrib.auth import base_user
 from rest_framework.permissions import BasePermission,SAFE_METHODS
 from user.models import User
-from menuItem.models import MenuItem
 
 
 class MenuItemPermission(BasePermission):
+    message = "Your role is not allowed to perform this action on menu items."
+
     def has_permission(self, request, view):
         user= request.user
         if user.role== User.RoleChoices.PLATFORM_ADMIN:

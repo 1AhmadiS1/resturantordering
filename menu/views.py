@@ -4,21 +4,48 @@ from menu.permissions import MenuPermission
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.shortcuts import render
 from rest_framework import viewsets
 from .models import Menu
 from .serializer import MenuSerializer
 from user.models import User
 # Create your views here.
 @extend_schema_view(
-    list=extend_schema(tags=["Menu"]),
-    retrieve=extend_schema(tags=["Menu"]),
-    create=extend_schema(tags=["Menu"]),
-    update=extend_schema(tags=["Menu"]),
-    partial_update=extend_schema(tags=["Menu"]),
-    destroy=extend_schema(tags=["Menu"]),
+    list=extend_schema(
+        tags=["Menus"],
+        summary="List visible menus",
+        description="Return menus belonging to restaurants visible to the authenticated user.",
+    ),
+    retrieve=extend_schema(
+        tags=["Menus"],
+        summary="Get a menu",
+        description="Return one visible menu with its restaurant name.",
+    ),
+    create=extend_schema(
+        tags=["Menus"],
+        summary="Create a menu",
+        description=(
+            "Platform admins may create a menu for any restaurant. Owners may create one "
+            "only for a restaurant they own. Each restaurant supports one menu."
+        ),
+    ),
+    update=extend_schema(
+        tags=["Menus"],
+        summary="Replace a menu",
+        description="Available to platform admins and the owner of the menu's restaurant.",
+    ),
+    partial_update=extend_schema(
+        tags=["Menus"],
+        summary="Update a menu",
+        description="Available to platform admins and the owner of the menu's restaurant.",
+    ),
+    destroy=extend_schema(
+        tags=["Menus"],
+        summary="Delete a menu",
+        description="Available to platform admins and the owner of the menu's restaurant.",
+    ),
 )
 class MenuModelViewSet(viewsets.ModelViewSet):
+    queryset = Menu.objects.all()
     serializer_class = MenuSerializer
     permission_classes = [IsAuthenticated, MenuPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -29,11 +56,11 @@ class MenuModelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user=self.request.user
+        queryset = Menu.objects.select_related("restuarant")
         if user.role == User.RoleChoices.OWNER:
-            return Menu.objects.filter(restuarant__owner=user).order_by("name")
+            return queryset.filter(restuarant__owner=user).order_by("name")
         elif user.role in [User.RoleChoices.CHEF,User.RoleChoices.WAITER]:
-            return Menu.objects.filter(restuarant=user.restaurant).order_by("name")
+            return queryset.filter(restuarant=user.restaurant).order_by("name")
         elif user.role == User.RoleChoices.PLATFORM_ADMIN:
-            return Menu.objects.all().order_by("name")
-        return Menu.objects.none()    
-    
+            return queryset.order_by("name")
+        return queryset.none()

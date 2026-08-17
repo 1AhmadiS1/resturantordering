@@ -5,10 +5,35 @@ from user.models import User
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
+    menu_name = serializers.CharField(source="menu.name", read_only=True)
+    restaurant_name = serializers.CharField(source="menu.restuarant.name", read_only=True)
+
     class Meta:
         model = MenuItem
-        fields = ["id", "name", "category", "price", "description", "menu", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "name",
+            "category",
+            "price",
+            "description",
+            "menu",
+            "menu_name",
+            "restaurant_name",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "menu_name",
+            "restaurant_name",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Price must be greater than zero.")
+        return value
 
     def validate_menu(self, value):
         request = self.context.get("request")

@@ -23,14 +23,25 @@ from rest_framework_simplejwt.views import (
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 @extend_schema_view(
-    post=extend_schema(tags=["Authentication"])
+    post=extend_schema(
+        tags=["Authentication"],
+        summary="Log in",
+        description=(
+            "Submit email and password to receive JWT access and refresh tokens. "
+            "Use the access token in Swagger's Authorize button as: Bearer <token>."
+        ),
+    )
 )
 class LoginView(TokenObtainPairView):
     pass
 
 
 @extend_schema_view(
-    post=extend_schema(tags=["Authentication"])
+    post=extend_schema(
+        tags=["Authentication"],
+        summary="Refresh an access token",
+        description="Submit a valid refresh token to receive a new access token.",
+    )
 )
 class RefreshTokenView(TokenRefreshView):
     pass

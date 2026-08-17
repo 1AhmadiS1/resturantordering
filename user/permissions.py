@@ -3,15 +3,28 @@ from rest_framework.permissions import BasePermission
 from user.models import User
 
 class RolePermission(BasePermission):
+    message = "Only platform admins and restaurant owners can manage users."
+
     def has_permission(self, request, view):
-        if request.user.role=='platform_admin':
+        return request.user.role in [
+            User.RoleChoices.PLATFORM_ADMIN,
+            User.RoleChoices.OWNER,
+        ]
+
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+
+        if user.role == User.RoleChoices.PLATFORM_ADMIN:
             return True
-        elif request.user.role=='owner':
-            return True
-        elif request.user.role=='waiter' or request.user.role=='chef':
-            return False
-        else:
-            return False
+
+        if user.role == User.RoleChoices.OWNER:
+            return (
+                obj.role in [User.RoleChoices.WAITER, User.RoleChoices.CHEF]
+                and obj.restaurant is not None
+                and obj.restaurant.owner_id == user.id
+            )
+
+        return False
 
 class ChangePasswordPermission(BasePermission):
     def has_permission(self, request, view):

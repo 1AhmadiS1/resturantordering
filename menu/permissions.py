@@ -3,6 +3,8 @@ from user.models import User
 
 
 class MenuPermission(BasePermission):
+    message = "Your role is not allowed to perform this action on menus."
+
     def has_permission(self, request, view):
         user = request.user
 
@@ -10,7 +12,7 @@ class MenuPermission(BasePermission):
             return True
 
         if user.role == User.RoleChoices.OWNER:
-            return user.restaurants.exists()
+            return True
 
         if user.role in [User.RoleChoices.WAITER, User.RoleChoices.CHEF]:
             return request.method in SAFE_METHODS

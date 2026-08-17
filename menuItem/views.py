@@ -5,24 +5,50 @@ from menuItem.permissions import MenuItemPermission
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 # pyrefly: ignore [missing-import]
 from .models import MenuItem
 # pyrefly: ignore [missing-import]
 from .serializer import MenuItemSerializer
 from user.models import User
-from menu.models import Menu
 # Create your views here.
 @extend_schema_view(
-    list=extend_schema(tags=["MenuItems"]),
-    retrieve=extend_schema(tags=["MenuItems"]),
-    create=extend_schema(tags=["MenuItems"]),
-    update=extend_schema(tags=["MenuItems"]),
-    partial_update=extend_schema(tags=["MenuItems"]),
-    destroy=extend_schema(tags=["MenuItems"]),
+    list=extend_schema(
+        tags=["Menu Items"],
+        summary="List visible menu items",
+        description="Return menu items from restaurants visible to the authenticated user.",
+    ),
+    retrieve=extend_schema(
+        tags=["Menu Items"],
+        summary="Get a menu item",
+        description="Return one visible menu item with readable menu and restaurant names.",
+    ),
+    create=extend_schema(
+        tags=["Menu Items"],
+        summary="Create a menu item",
+        description=(
+            "Platform admins may add an item to any menu. Owners may add an item only "
+            "to a menu belonging to their restaurant. Price must be greater than zero."
+        ),
+    ),
+    update=extend_schema(
+        tags=["Menu Items"],
+        summary="Replace a menu item",
+        description="Available to platform admins and the owner of the item's restaurant.",
+    ),
+    partial_update=extend_schema(
+        tags=["Menu Items"],
+        summary="Update a menu item",
+        description="Available to platform admins and the owner of the item's restaurant.",
+    ),
+    destroy=extend_schema(
+        tags=["Menu Items"],
+        summary="Delete a menu item",
+        description="Available to platform admins and the owner of the item's restaurant.",
+    ),
 )
 class MenuItemViewSet(ModelViewSet):
+    queryset = MenuItem.objects.all()
     serializer_class=MenuItemSerializer
     permission_classes=[IsAuthenticated,MenuItemPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -33,10 +59,11 @@ class MenuItemViewSet(ModelViewSet):
 
     def get_queryset(self):
         user=self.request.user
+        queryset = MenuItem.objects.select_related("menu", "menu__restuarant")
         if user.role == User.RoleChoices.PLATFORM_ADMIN:
-            return MenuItem.objects.all().order_by("name")
+            return queryset.order_by("name")
         elif user.role== User.RoleChoices.OWNER:
-            return MenuItem.objects.filter(menu__restuarant__owner=user).order_by("name")
+            return queryset.filter(menu__restuarant__owner=user).order_by("name")
         elif user.role in [User.RoleChoices.WAITER,User.RoleChoices.CHEF]:
-            return MenuItem.objects.filter(menu__restuarant=user.restaurant).order_by("name")
-        return MenuItem.objects.none()
+            return queryset.filter(menu__restuarant=user.restaurant).order_by("name")
+        return queryset.none()
