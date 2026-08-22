@@ -30,7 +30,12 @@ ALLOWED_HOSTS = [
     for host in config("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",")
     if host.strip()
 ]
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in config("CSRF_TRUSTED_ORIGINS", default="").split(",")
@@ -61,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "corsheaders",
     'rest_framework',
     "django_filters",
     "drf_spectacular",
@@ -73,6 +79,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

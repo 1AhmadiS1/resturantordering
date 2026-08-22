@@ -64,3 +64,5 @@ class MenuModelViewSet(viewsets.ModelViewSet):
         elif user.role == User.RoleChoices.PLATFORM_ADMIN:
             return queryset.order_by("name")
         return queryset.none()
+        
+
