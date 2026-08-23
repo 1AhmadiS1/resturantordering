@@ -1,5 +1,6 @@
 from rest_framework import serializers
 # pyrefly: ignore [missing-import]
+from resturantorderingapi.validators import validate_no_html
 from .models import MenuItem
 from user.models import User
 
@@ -29,6 +30,15 @@ class MenuItemSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def validate_name(self, value):
+        return validate_no_html(value)
+
+    def validate_category(self, value):
+        return validate_no_html(value)
+
+    def validate_description(self, value):
+        return validate_no_html(value)
 
     def validate_price(self, value):
         if value <= 0:

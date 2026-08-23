@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from resturantorderingapi.validators import validate_no_html
 from .models import Menu
 from user.models import User
 
@@ -18,6 +19,12 @@ class MenuSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "restaurant_name", "created_at", "updated_at"]
+
+    def validate_name(self, value):
+        return validate_no_html(value)
+
+    def validate_description(self, value):
+        return validate_no_html(value)
 
     def validate_restuarant(self, value):
         request = self.context.get("request")

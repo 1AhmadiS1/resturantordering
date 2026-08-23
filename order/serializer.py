@@ -4,6 +4,7 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from resturantorderingapi.validators import validate_no_html
 from user.models import User
 
 from .models import Order, OrderItem
@@ -183,6 +184,9 @@ class OrderSerializer(serializers.ModelSerializer):
                 )
             },
         }
+
+    def validate_note(self, value):
+        return validate_no_html(value)
 
     def validate(self, attrs):
         request = self.context.get("request")

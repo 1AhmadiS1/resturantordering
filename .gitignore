@@ -29,3 +29,8 @@ Thumbs.db
 # Local databases and logs
 *.sqlite3
 *.log
+backend_security_and_deployment_notes.docx
+
+# docker files
+docker-compose.prod.yml
+

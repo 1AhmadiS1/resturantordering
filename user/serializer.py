@@ -2,6 +2,7 @@ from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
+from resturantorderingapi.validators import validate_no_html
 from user.models import User
 
 
@@ -31,6 +32,12 @@ class UserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Only platform admins can assign this role.")
 
         return value
+
+    def validate_first_name(self, value):
+        return validate_no_html(value)
+
+    def validate_last_name(self, value):
+        return validate_no_html(value)
 
     def validate_password(self, value):
         if self.instance is not None:

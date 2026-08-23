@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from resturantorderingapi.validators import validate_no_html
 from .models import Restaurant
 from user.models import User
 
@@ -9,6 +10,18 @@ class ResturantSerializer(serializers.ModelSerializer):
         model=Restaurant
         fields=['id','name','owner','owner_email','address','phone','email','description','created_at','updated_at']
         read_only_fields=['id','owner_email','created_at','updated_at']
+
+    def validate_name(self, value):
+        return validate_no_html(value)
+
+    def validate_address(self, value):
+        return validate_no_html(value)
+
+    def validate_phone(self, value):
+        return validate_no_html(value)
+
+    def validate_description(self, value):
+        return validate_no_html(value)
     
     def validate_owner(self,value):
         if value.role != User.RoleChoices.OWNER:

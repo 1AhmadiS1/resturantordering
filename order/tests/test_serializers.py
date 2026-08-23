@@ -200,6 +200,19 @@ class OrderSerializerTest(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("items", serializer.errors)
 
+    def test_create_rejects_html_note(self):
+        serializer = OrderSerializer(
+            data={
+                "table": self.table.id,
+                "note": "<img src=x onerror=alert('xss')>",
+                "items": [{"menu_item": self.burger.id, "quantity": 1}],
+            },
+            context={"request": self.request_for(self.waiter)},
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("note", serializer.errors)
+
     def test_owner_cannot_create_order_for_another_restaurant(self):
         serializer = OrderSerializer(
             data={

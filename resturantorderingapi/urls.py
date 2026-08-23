@@ -16,35 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from user.token_views import ThrottledTokenObtainPairView, ThrottledTokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from drf_spectacular.utils import extend_schema, extend_schema_view
-@extend_schema_view(
-    post=extend_schema(
-        tags=["Authentication"],
-        summary="Log in",
-        description=(
-            "Submit email and password to receive JWT access and refresh tokens. "
-            "Use the access token in Swagger's Authorize button as: Bearer <token>."
-        ),
-    )
-)
-class LoginView(TokenObtainPairView):
-    pass
-
-
-@extend_schema_view(
-    post=extend_schema(
-        tags=["Authentication"],
-        summary="Refresh an access token",
-        description="Submit a valid refresh token to receive a new access token.",
-    )
-)
-class RefreshTokenView(TokenRefreshView):
-    pass
 
 
 
@@ -57,8 +31,8 @@ urlpatterns = [
             url_name="schema"
         ),
     ),
-    path("api/token/",LoginView.as_view(), name="login"),
-    path("api/token/refresh/", RefreshTokenView.as_view(), name="refresh"),
+    path("api/token/",ThrottledTokenObtainPairView.as_view(), name="login"),
+    path("api/token/refresh/", ThrottledTokenRefreshView.as_view(), name="refresh"),
     path("api/", include("user.urls")),
     path("api/", include("restaurant.urls")),
     path("api/", include("menu.urls")),

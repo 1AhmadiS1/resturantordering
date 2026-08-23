@@ -103,6 +103,21 @@ class UserSerializerTest(TestCase):
         user = serializer.save()
         self.assertEqual(user.restaurant, self.restaurant)
 
+    def test_user_name_rejects_html(self):
+        serializer = UserCreateSerializer(
+            data={
+                "email": "xss-user@example.com",
+                "password": self.password,
+                "first_name": "<script>alert('xss')</script>",
+                "last_name": "User",
+                "role": User.RoleChoices.OWNER,
+            },
+            context={"request": self.request_for(self.admin)},
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("first_name", serializer.errors)
+
     def test_owner_cannot_assign_staff_to_another_restaurant(self):
         serializer = UserCreateSerializer(
             data={
