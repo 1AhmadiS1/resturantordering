@@ -17,6 +17,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             "category",
             "price",
             "description",
+            "image",
             "menu",
             "menu_name",
             "restaurant_name",

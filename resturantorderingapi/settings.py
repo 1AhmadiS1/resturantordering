@@ -31,10 +31,9 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    origin.strip()
+    for origin in config("CORS_ALLOWED_ORIGINS", default="").split(",")
+    if origin.strip()
 ]
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()

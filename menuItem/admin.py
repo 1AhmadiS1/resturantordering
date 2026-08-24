@@ -3,17 +3,17 @@ from django.contrib import admin
 from .models import MenuItem
 # Register your models here.
 class MenuItemAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "category", "price", "menu", "created_at", "updated_at")
+    list_display = ("id", "name", "category", "price", "menu", "image", "created_at", "updated_at")
     add_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("id", "name", "category", "price", "menu", "created_at", "updated_at"),
+            "fields": ("id", "name", "category", "price", "description", "image", "menu", "created_at", "updated_at"),
         }),
     )
     edit_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("id", "name", "category", "price", "menu", "created_at", "updated_at"),
+            "fields": ("id", "name", "category", "price", "description", "image", "menu", "created_at", "updated_at"),
         }),
     )
     search_fields = ("name", "category")
