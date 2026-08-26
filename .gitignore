@@ -30,7 +30,7 @@ Thumbs.db
 *.sqlite3
 *.log
 backend_security_and_deployment_notes.docx
+backend_security_and_deployment_notes.md
 aws_learning_progress.md
 
 # docker files
-
