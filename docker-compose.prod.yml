@@ -32,14 +32,14 @@ services:
       db:
         condition: service_healthy
 
-  db:
-    image: mysql:8.0
-    restart: unless-stopped
-    volumes:
-      - mysql_data:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: ${DB_NAME:?DB_NAME must be set}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+  # db:
+  #   image: mysql:8.0
+  #   restart: unless-stopped
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   environment:
+  #     MYSQL_DATABASE: ${DB_NAME:?DB_NAME must be set}
+  #     MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
   nginx:
     image: nginx:alpine
     restart: unless-stopped
