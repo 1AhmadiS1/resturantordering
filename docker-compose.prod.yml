@@ -1,7 +1,6 @@
 services:
   web:
-    build:
-      context: .
+    image: 272086646330.dkr.ecr.eu-central-1.amazonaws.com/restohubapi-web:latest
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
