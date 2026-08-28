@@ -35,7 +35,13 @@ services:
       - media_volume:/app/mediafiles
     expose:
       - "8000"
-
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-central-1
+        awslogs-group: /restohubapi/prod/web
+        awslogs-stream: web
+        awslogs-create-group: "true"
   # db:
   #   image: mysql:8.0
   #   restart: unless-stopped
@@ -58,7 +64,13 @@ services:
       - certbot_certs:/etc/letsencrypt:ro
     depends_on:
       - web
-
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-central-1
+        awslogs-group: /restohubapi/prod/nginx
+        awslogs-stream: nginx
+        awslogs-create-group:  "true"    
   certbot:
     image: certbot/certbot
     volumes:
