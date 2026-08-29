@@ -111,6 +111,23 @@ class ChangePasswordView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
+@extend_schema(
+    tags=["Authentication"],
+    summary="Get the current user",
+    description=(
+        "Return the authenticated user's profile. Frontend clients use this endpoint "
+        "after login to load the user's role and restaurant assignment."
+    ),
+    responses={200: UserSerializer},
+)
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
         
             
         
