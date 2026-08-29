@@ -144,3 +144,35 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class ChangePasswordResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
+
+
+class ResetUserPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True, write_only=True)
+    confirm_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, value):
+        user = self.instance
+
+        if value["new_password"] != value["confirm_password"]:
+            raise serializers.ValidationError({
+                "confirm_password": "Password confirmation does not match."
+            })
+
+        if user.check_password(value["new_password"]):
+            raise serializers.ValidationError({
+                "new_password": "New password must be different from the current password."
+            })
+
+        try:
+            password_validation.validate_password(value["new_password"], user=user)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError({
+                "new_password": list(error.messages)
+            }) from error
+
+        return value
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data["new_password"])
+        instance.save(update_fields=["password"])
+        return instance

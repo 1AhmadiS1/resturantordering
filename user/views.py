@@ -6,13 +6,14 @@ from user.serializer import ChangePasswordResponseSerializer, ChangePasswordSeri
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from user.models import User
 from user.permissions import RolePermission
-from user.serializer import UserCreateSerializer, UserSerializer
+from user.serializer import ResetUserPasswordSerializer, UserCreateSerializer, UserSerializer
 
 @extend_schema_view(
     list=extend_schema(
@@ -69,6 +70,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return UserCreateSerializer
+        if self.action == "reset_password":
+            return ResetUserPasswordSerializer
         return UserSerializer
 
     def get_queryset(self):
@@ -83,6 +86,31 @@ class UserViewSet(viewsets.ModelViewSet):
                 role__in=[User.RoleChoices.WAITER, User.RoleChoices.CHEF],
             ).order_by("role")
         return User.objects.none()
+
+    @extend_schema(
+        tags=["Users"],
+        summary="Reset a user's password",
+        description=(
+            "Platform admins may reset any user's password. Owners may reset passwords "
+            "only for waiter or chef accounts assigned to their own restaurant."
+        ),
+        request=ResetUserPasswordSerializer,
+        responses={200: ChangePasswordResponseSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="reset-password")
+    def reset_password(self, request, pk=None):
+        user = self.get_object()
+        serializer = self.get_serializer(
+            instance=user,
+            data=request.data,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "Password reset successfully."},
+            status=status.HTTP_200_OK,
+        )
 
 @extend_schema(
     tags=["Authentication"],

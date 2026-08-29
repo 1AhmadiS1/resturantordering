@@ -6,6 +6,7 @@ from restaurant.models import Restaurant
 from user.models import User
 from user.serializer import (
     ChangePasswordSerializer,
+    ResetUserPasswordSerializer,
     UserCreateSerializer,
     UserSerializer,
 )
@@ -202,3 +203,30 @@ class UserSerializerTest(TestCase):
         serializer.save()
         self.waiter.refresh_from_db()
         self.assertTrue(self.waiter.check_password(new_password))
+
+    def test_reset_user_password_hashes_valid_new_password(self):
+        new_password = "ResetPassword!2026-Strong"
+        serializer = ResetUserPasswordSerializer(
+            instance=self.waiter,
+            data={
+                "new_password": new_password,
+                "confirm_password": new_password,
+            },
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+        self.waiter.refresh_from_db()
+        self.assertTrue(self.waiter.check_password(new_password))
+
+    def test_reset_user_password_requires_matching_confirmation(self):
+        serializer = ResetUserPasswordSerializer(
+            instance=self.waiter,
+            data={
+                "new_password": "ResetPassword!2026-Strong",
+                "confirm_password": "DifferentPassword!2026-Strong",
+            },
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("confirm_password", serializer.errors)

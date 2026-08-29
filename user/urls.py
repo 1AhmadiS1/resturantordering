@@ -8,6 +8,7 @@ router = DefaultRouter()
 router.register("users", UserViewSet, basename="user")
 urlpatterns=[
     path("me/", CurrentUserView.as_view(), name="current-user"),
-    path("change-password/",ChangePasswordView.as_view(),name="change-password")
+    path("change-password/",ChangePasswordView.as_view(),name="change-password"),
+    
 ]
 urlpatterns += router.urls
