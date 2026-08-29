@@ -38,3 +38,6 @@ progress.md
 SETUP_NEW_LAPTOP.md
 
 # docker files
+
+# fake data file
+seed_demo.py
