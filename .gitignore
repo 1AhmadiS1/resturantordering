@@ -32,6 +32,7 @@ Thumbs.db
 backend_security_and_deployment_notes.docx
 restohub_demo_accounts.docx
 restohub_production_demo_accounts.docx
+restaurant/management/commands/seed_demo.py
 backend_security_and_deployment_notes.md
 aws_learning_progress.md
 progress.md
@@ -40,4 +41,4 @@ SETUP_NEW_LAPTOP.md
 # docker files
 
 # fake data file
-seed_demo.py
+restaurant/management/commands/seed_demo.py
