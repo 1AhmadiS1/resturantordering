@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "menuItem.apps.MenuitemConfig",
     "table.apps.TableConfig",
     'order.apps.OrderConfig',
+    'dashboard.apps.DashboardConfig',
 ]
 
 MIDDLEWARE = [

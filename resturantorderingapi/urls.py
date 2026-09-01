@@ -41,6 +41,7 @@ urlpatterns = [
     path("api/", include("menuItem.urls")),
     path("api/", include("table.urls")),
     path("api/", include("order.urls")),
+    path("api/", include("dashboard.urls")),
 ]
 
 if settings.DEBUG:
