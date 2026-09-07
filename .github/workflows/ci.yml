@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Django tests
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ci-only-secret-key
+      DJANGO_DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DB_NAME: restaurant_ordering_test
+      DB_USER: root
+      DB_PASSWORD: ci-only-database-password
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Build and start containers
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+      - name: Run Django checks
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T web python manage.py check
+
+      - name: Run Django tests
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T web python manage.py test
+
+      - name: Show container logs after failure
+        if: failure()
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml logs
+
+      - name: Remove container
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
